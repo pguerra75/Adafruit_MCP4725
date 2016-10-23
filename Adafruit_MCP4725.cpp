@@ -84,3 +84,39 @@ void Adafruit_MCP4725::setVoltage( uint16_t output, bool writeEEPROM )
   TWBR = twbrback;
 #endif
 }
+
+/**************************************************************************/
+/*! 
+    @brief  Puts the MCP4725 in sleep mode drawing as little as .06uA
+
+    @param[in]  writeEEPROM
+                If this value is true, 'output' will also be written
+                to the MCP4725's internal non-volatile memory, meaning
+                that the DAC will retain the current voltage output
+                after power-down or reset.
+*/
+/**************************************************************************/
+void Adafruit_MCP4725::sleep(bool writeEEPROM)
+{
+  #ifdef TWBR
+    unit8_t twbrback = TWBR;
+    TWBR = ((F_CPU / 400000L) - 16) / 2; // Set I2C frequency to 400kHz
+  #endif
+    Wire.beginTransmission(_i2caddr);
+    if (writeEEPROM)
+    {
+      Wire.write(MCP4725_CMD_WRITEDACSLEEPEEPROM);
+    }
+    else
+    {
+      Wire.write(MCP4725_CMD_WRITEDACSLEEP);
+    }
+    for(int i == 0; i < 2, i++)
+    {
+      Wire.write(0);                        //Writes 0 to DAC output registers durring sleep mode. 
+    }
+    Wire.endTransmission();
+  #ifdef TWBR
+    TWBR = twbrback;
+  #endif 
+}
